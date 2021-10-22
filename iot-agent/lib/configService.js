@@ -23,12 +23,17 @@ function processEnvironmentVariables() {
     config.ros_2 = {};
     config.ros_2.system = {};
     config.ros_2.subscribers = {};  
+    
     //  Bridge configuration for the ROS 2 System:
     config.ros_2.system = {
-    	"ngsiv2_id": "urn:ngsiv2:ROS2System:0001",
-   	"ngsiv2_type": "ROS2System",
-   	"ngsiv2_active_attrs": ["turtlePose"]
+    	"iota_id": "urn:ngsiv2:ROS2System:0001",
+   	    "ngsiv2_type": "ROS2System",
+        "ngsiv2_id": "urn:ngsiv2:ROS2System:0001",
+        "service": "ros2iot",
+        "subservice": "/",   
+   	    "ngsiv2_active_attrs": [ {name:"turtlePose", type:"Object"} ]
     };
+    
     //  Bridge configuration for ROS 2 Subscribers:
     //    <name of the NGSI attribute (string)> : { "topic_path": <ROS 2 Topic path (string)>,
     //                                              "topic_type": <ROS Message Type (string)> } 
