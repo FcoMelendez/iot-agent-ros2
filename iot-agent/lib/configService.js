@@ -20,13 +20,36 @@ function anyIsSet(variableSet) {
 
 function processEnvironmentVariables() {
 
+    config.iota = {
+        logLevel: 'DEBUG',
+        contextBroker: {
+            host: '192.168.1.15', //192.168.1.15
+            port: '1026',
+            ngsiVersion: 'v2'
+        },
+        server: {
+            port: 4061,
+            host: '192.168.1.18' //192.168.1.18
+        },
+        deviceRegistry: {
+            type: 'memory'
+        },
+        types: {},
+        service: 'ros2iot',
+        subservice: '/',
+        providerUrl: 'http://192.168.1.111:4061', //http://192.168.1.18:4061
+        defaultResource: '/',
+        defaultType: 'ROS2System',
+        defaultKey: 'abc'
+    };
+
     config.ros_2 = {};
     config.ros_2.system = {};
     config.ros_2.subscribers = {};  
     
     //  Bridge configuration for the ROS 2 System:
     config.ros_2.system = {
-    	"iota_id": "urn:ngsiv2:ROS2System:0001",
+    	"iota_id": "ROS2System0001",
    	    "ngsiv2_type": "ROS2System",
         "ngsiv2_id": "urn:ngsiv2:ROS2System:0001",
         "service": "ros2iot",
