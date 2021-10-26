@@ -13,34 +13,24 @@ var iota_conf = {};
 var checkDeviceLoop = {};
 var ros2Loop = {};
 var registered_devices_count = 0;
-
+var cached_ros2_msgs_for_lazy_attrs = {};
 
 /**
  * Main Flow of the ROS 2 <> NGSI IoTA
- *  1. Setup and Activate the IoT Agent
+ *  1. Load the Configuration and Activate the IoT Agent
  *  2. Read the Conf File and Register the ROS 2 System
  *  3. Start the ROS 2 Middleware
  */
 function start() {
-  configSrv.setConfig({});
-  configSrv.getLogger().info(context, configSrv.getConfig());
-  
-  // 1. Setup and Activate the Agent
+   
+  // 1. Initialize the app and Activate the Agent
   // -------------------------------
-  iotAgentLib.activate(configSrv.getConfig().iota, function (error) {
-    if (error) {
-        console.log("There was an error activating the IOTA");
-        process.exit(1);
-    } else {
-        console.log("The IOTA started successfully!!");
-    }
-  });
-  
-
-  // 2. Read the Conf File and Register the ROS 2 System in the IoTA
-  // ---------------------------------------------------------------
-
   readConfigurationParams();
+  activateTheAgent();
+ 
+
+  // 2. Register the ROS 2 System in the IoTA
+  // ---------------------------------------------------------------
   provisionROS2Service();
   provisionROS2System();
   waitUntilTheIotaIsReady();
@@ -48,7 +38,6 @@ function start() {
 
   // 3. Start the ROS 2 middleware
   // -----------------------------
-
   startTheROS2Loop();
 
 }
@@ -56,7 +45,10 @@ function start() {
 // Aux Function for Loading Configuration Variables
 ///////////////////////////////////////////////////
 function readConfigurationParams(){
-   
+  
+  configSrv.setConfig({});
+  configSrv.getLogger().info(context, configSrv.getConfig());
+
   // Read IoTA Service Configuration
   iota_conf["server_host"] = configSrv.getConfig().iota.server.host;
   iota_conf["server_port"] = configSrv.getConfig().iota.server.port;
@@ -73,6 +65,7 @@ function readConfigurationParams(){
   ros2_system_conf["service"]= configSrv.getConfig().ros_2.system.service;
   ros2_system_conf["subservice"]= configSrv.getConfig().ros_2.system.subservice;
   ros2_system_conf["attributes"] = configSrv.getConfig().ros_2.system.ngsiv2_active_attrs;
+  ros2_system_conf["lazy_attrs"] = configSrv.getConfig().ros_2.system.ngsiv2_lazy_attrs;
   ros2_system_conf["subscribers"] = configSrv.getConfig().ros_2.subscribers;
 
 }
@@ -80,6 +73,18 @@ function readConfigurationParams(){
 
 // Aux Functions for IoTA Features
 ///////////////////////////////////
+function activateTheAgent(){
+  iotAgentLib.activate(configSrv.getConfig().iota, function (error) {
+    if (error) {
+        console.log("There was an error activating the IOTA");
+        process.exit(1);
+    } else {
+        iotAgentLib.setDataQueryHandler(queryContextHandler);
+        console.log("The IOTA started successfully!!");
+    }
+  });
+}
+
 function provisionROS2Service(){
   var options = {
     'method': 'POST',
@@ -113,7 +118,8 @@ function provisionROS2System(){
     body: JSON.stringify({"devices":[{"device_id": ros2_system_conf.id,
                                       "entity_name":ros2_system_conf.name,
                                       "entity_type": ros2_system_conf.type,
-                                      "attributes":ros2_system_conf.attributes}]})
+                                      "attributes":ros2_system_conf.attributes,
+                                      "lazy": ros2_system_conf.lazy_attrs}]})
 
   };
   request(options, function (error, response) {
@@ -134,8 +140,6 @@ function checkDevice(){
       clearInterval (checkDeviceLoop);
       registered_devices_count = obj.count;
       console.log("IOTA Agent: The ROS 2 System is Ready");   
-      var myObj = [{"name":"turtlePose", "type":"Object", "value":"somevalue"}];
-      processROS2Message(myObj);
     }
     else{
       console.log("IOTA Agent: Waiting for the ROS 2 System to be registered");  
@@ -143,6 +147,18 @@ function checkDevice(){
   });
 }
 
+function queryContextHandler(id, type, service, subservice, attributes, callback) {
+  var response = {};
+  response["id"]= id;
+  response["type"]= type;
+  for (var i = 0; i < attributes.length; i++) {
+      let attrObject = {};
+      attrObject["type"] = cached_ros2_msgs_for_lazy_attrs[attributes[i]].type;
+      attrObject["value"] = cached_ros2_msgs_for_lazy_attrs[attributes[i]].value;
+      response[attributes[i]] = attrObject;
+  }
+  callback(null, response);
+}
 
 
 // Aux Functions for ROS 2 Features
@@ -165,12 +181,26 @@ function startROS(){
         let topic_type_str = ros2_system_conf.subscribers[ngsi_attr_name].topic_type;
         let topic_path_str = ros2_system_conf.subscribers[ngsi_attr_name].topic_path;
         last_message[ngsi_attr_name] = new Date().getTime();
-        createSubscriber(node,topic_type_str,
+        createSubscriberForActiveAttr(node,
+                              topic_type_str,
                               topic_path_str,
                               ngsi_attr_name, 
                               1000);
       });
-   
+      // Create a ROS 2 Subscriber for each Lazy Attribute
+      var ros_lazy_attrs = ros2_system_conf.lazy_attrs;
+        
+        ros_lazy_attrs.forEach(lazy_element => {
+        let ngsi_lazy_attr_name = lazy_element.name;
+        let lazy_topic_type_str = ros2_system_conf.subscribers[ngsi_lazy_attr_name].topic_type;
+        let lazy_topic_path_str = ros2_system_conf.subscribers[ngsi_lazy_attr_name].topic_path;
+        last_message[ngsi_lazy_attr_name] = new Date().getTime();
+        createSubscriberForLazyAttr(node,
+                              lazy_topic_type_str,
+                              lazy_topic_path_str,
+                              ngsi_lazy_attr_name, 
+                              1000);
+      });
     node.spin(); 
     });
   }
@@ -179,8 +209,6 @@ function startROS(){
   }
 
 }
-
-
 
 /** 
 * Create a ROS 2 subscriber using rcl-nodejs
@@ -192,8 +220,9 @@ function startROS(){
 * @param {Integer} throttling_ms_int sets the minimum period (in milisecs) between messages 
 *
 */
-function createSubscriber(ros2_node, topic_type_str, topic_path_str, ngsi_attr_name_str,throttling_ms_int)
+function createSubscriberForActiveAttr(ros2_node, topic_type_str, topic_path_str, ngsi_attr_name_str,throttling_ms_int)
 {
+  last_message[ngsi_attr_name_str] = 0;
   ros2_node.createSubscription(topic_type_str, topic_path_str, (msg) => {
     let last_time_stamp = last_message[ngsi_attr_name_str];
     let time_stamp = new Date().getTime();
@@ -225,6 +254,33 @@ function sendROS2MessageAsActiveAttribute(ngsi_attribute_name, ros2_message)
     }
   });
 }
+
+function createSubscriberForLazyAttr(ros2_node, topic_type_str, topic_path_str, ngsi_attr_name_str,throttling_ms_int)
+{
+    last_message[ngsi_attr_name_str] = 0;
+    ros2_node.createSubscription(topic_type_str, topic_path_str, (msg) => {
+    let last_time_stamp = last_message[ngsi_attr_name_str];
+    let time_stamp = new Date().getTime();
+    let diff = Math.abs(time_stamp - last_time_stamp);
+    if (diff > throttling_ms_int) 
+    {
+      console.log(`Received message: ${typeof msg}`, msg);
+      var messageObject = {"name":ngsi_attr_name_str, "type":"Object", "value":msg};
+      cached_ros2_msgs_for_lazy_attrs[ngsi_attr_name_str] = messageObject;
+      last_message[ngsi_attr_name_str] = new Date().getTime();
+    }
+  });
+
+}
+
+// Sys Functions
+/////////////////////
+process.on('SIGINT', function() {
+  console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+  // some other closing procedures go here
+  process.exit(0);
+});
+
 
 start();
 

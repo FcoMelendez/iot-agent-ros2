@@ -23,13 +23,13 @@ function processEnvironmentVariables() {
     config.iota = {
         logLevel: 'DEBUG',
         contextBroker: {
-            host: '192.168.1.15', //192.168.1.15
+            host: '192.168.1.104', //192.168.1.15
             port: '1026',
             ngsiVersion: 'v2'
         },
         server: {
             port: 4061,
-            host: '192.168.1.18' //192.168.1.18
+            host: '192.168.1.131' //192.168.1.18
         },
         deviceRegistry: {
             type: 'memory'
@@ -37,7 +37,7 @@ function processEnvironmentVariables() {
         types: {},
         service: 'ros2iot',
         subservice: '/',
-        providerUrl: 'http://192.168.1.111:4061', //http://192.168.1.18:4061
+        providerUrl: 'http://192.168.1.131:4061', //http://192.168.1.18:4061
         defaultResource: '/',
         defaultType: 'ROS2System',
         defaultKey: 'abc'
@@ -54,14 +54,16 @@ function processEnvironmentVariables() {
         "ngsiv2_id": "urn:ngsiv2:ROS2System:0001",
         "service": "ros2iot",
         "subservice": "/",   
-   	    "ngsiv2_active_attrs": [ {name:"turtlePose", type:"Object"} ]
+   	    "ngsiv2_active_attrs": [],//[ {name:"turtlePose", type:"Object"} ],
+        "ngsiv2_lazy_attrs": [{name:"turtleColor", type:"Object"}, {name:"turtlePose", type:"Object"}]   
     };
     
     //  Bridge configuration for ROS 2 Subscribers:
     //    <name of the NGSI attribute (string)> : { "topic_path": <ROS 2 Topic path (string)>,
     //                                              "topic_type": <ROS Message Type (string)> } 
     config.ros_2.subscribers = {
-    	"turtlePose" : { "topic_path": "/turtle1/pose", "topic_type": "turtlesim/msg/Pose"} 
+    	"turtlePose" : { "topic_path": "/turtle1/pose", "topic_type": "turtlesim/msg/Pose"},
+        "turtleColor" : { "topic_path": "/turtle1/color_sensor", "topic_type": "turtlesim/msg/Color"}  
     };  
       	
 }
