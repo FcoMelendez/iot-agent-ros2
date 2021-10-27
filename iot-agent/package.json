@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "iotagent-node-lib": "*",
+    "async": "*",
     "http": "*",
     "express": "*",
     "request": "*",

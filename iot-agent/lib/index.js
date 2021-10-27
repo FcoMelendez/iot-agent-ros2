@@ -1,7 +1,8 @@
 const rclnodejs = require('rclnodejs');
 var iotAgentLib = require('iotagent-node-lib');
+var async = require('async');
 var request = require('request');
-var configSrv = require('./configService'),
+var config = require('./configService'),
     context = {
       op: 'IoTA-ROS2.Agent'
     };
@@ -14,6 +15,14 @@ var checkDeviceLoop = {};
 var ros2Loop = {};
 var registered_devices_count = 0;
 var cached_ros2_msgs_for_lazy_attrs = {};
+var ros_node = {}
+
+// ROS 2 Commands
+// Constants
+const ros2_commands = {
+  PUBLISH_CMD_RESULT: "OK",
+  PUBLISH_CMD_FINAL_STATUS: "COMPLETED"
+};
 
 /**
  * Main Flow of the ROS 2 <> NGSI IoTA
@@ -24,62 +33,104 @@ var cached_ros2_msgs_for_lazy_attrs = {};
 function start() {
    
   // 1. Initialize the app and Activate the Agent
-  // -------------------------------
+  // --------------------------------------------
   readConfigurationParams();
   activateTheAgent();
  
-
   // 2. Register the ROS 2 System in the IoTA
-  // ---------------------------------------------------------------
+  // ----------------------------------------
   provisionROS2Service();
   provisionROS2System();
   waitUntilTheIotaIsReady();
-  
-
+ 
   // 3. Start the ROS 2 middleware
   // -----------------------------
   startTheROS2Loop();
 
 }
 
-// Aux Function for Loading Configuration Variables
-///////////////////////////////////////////////////
-function readConfigurationParams(){
-  
-  configSrv.setConfig({});
-  configSrv.getLogger().info(context, configSrv.getConfig());
-
-  // Read IoTA Service Configuration
-  iota_conf["server_host"] = configSrv.getConfig().iota.server.host;
-  iota_conf["server_port"] = configSrv.getConfig().iota.server.port;
-  iota_conf["cbroker_host"] = configSrv.getConfig().iota.contextBroker.host;
-  iota_conf["cbroker_port"] = configSrv.getConfig().iota.contextBroker.port;
-  iota_conf["default_type"] = configSrv.getConfig().iota.defaultType;
-  iota_conf["default_key"] = configSrv.getConfig().iota.defaultKey;
-  iota_conf["default_resource"] = configSrv.getConfig().iota.defaultResource;
-  
-  // Read ROS 2 System Configuration
-  ros2_system_conf["id"]= configSrv.getConfig().ros_2.system.iota_id;
-  ros2_system_conf["type"]= configSrv.getConfig().ros_2.system.ngsiv2_type;
-  ros2_system_conf["name"]= configSrv.getConfig().ros_2.system.ngsiv2_id;
-  ros2_system_conf["service"]= configSrv.getConfig().ros_2.system.service;
-  ros2_system_conf["subservice"]= configSrv.getConfig().ros_2.system.subservice;
-  ros2_system_conf["attributes"] = configSrv.getConfig().ros_2.system.ngsiv2_active_attrs;
-  ros2_system_conf["lazy_attrs"] = configSrv.getConfig().ros_2.system.ngsiv2_lazy_attrs;
-  ros2_system_conf["subscribers"] = configSrv.getConfig().ros_2.subscribers;
-
+// IoTA Agent Handlers
+//////////////////////
+function queryContextHandler(id, type, service, subservice, attributes, callback) {
+  var response = {};
+  response["id"]= id;
+  response["type"]= type;
+  for (var i = 0; i < attributes.length; i++) {
+      let attrObject = {};
+      attrObject["type"] = cached_ros2_msgs_for_lazy_attrs[attributes[i]].type;
+      attrObject["value"] = cached_ros2_msgs_for_lazy_attrs[attributes[i]].value;
+      response[attributes[i]] = attrObject;
+  }
+  callback(null, response);
 }
 
+function commandHandler(deviceId, type, service, subservice, attributes, callback) {
+  // ToDo: generate command exsecution for the whole command array
+  // ToDo: validate the command payload (Check it is a convenient ROS Message)
+  var cmdObj = attributes[0];
+  generateCommandExecution(service, subservice, deviceId, cmdObj);
+  callback();
+}
+
+// Main ROS 2 Loop
+//////////////////
+
+var startTheROS2Loop =  function(){ros2Loop = setInterval(startROS, 1000);};
+
+function startROS(){
+  if(registered_devices_count>0){
+    clearInterval(ros2Loop);
+    console.log("ROS2 System: Starting ROS 2 Node");
+    rclnodejs.init().then(() => {
+      // Create the ROS 2 Node
+      const node = new rclnodejs.Node('iot_agent', 'ngsiv2');
+      ros_node = node;
+      // Create a ROS 2 Subscriber for each Active Attribute
+      var ros_attributes = ros2_system_conf.attributes;
+      ros_attributes.forEach(element => {
+        let ngsi_attr_name = element.name;
+        let topic_type_str = ros2_system_conf.subscribers[ngsi_attr_name].topic_type;
+        let topic_path_str = ros2_system_conf.subscribers[ngsi_attr_name].topic_path;
+        last_message[ngsi_attr_name] = new Date().getTime();
+        createSubscriberForActiveAttr(node,
+                              topic_type_str,
+                              topic_path_str,
+                              ngsi_attr_name, 
+                              1000);
+      });
+      // Create a ROS 2 Subscriber for each Lazy Attribute
+      var ros_lazy_attrs = ros2_system_conf.lazy_attrs;
+        
+        ros_lazy_attrs.forEach(lazy_element => {
+        let ngsi_lazy_attr_name = lazy_element.name;
+        let lazy_topic_type_str = ros2_system_conf.subscribers[ngsi_lazy_attr_name].topic_type;
+        let lazy_topic_path_str = ros2_system_conf.subscribers[ngsi_lazy_attr_name].topic_path;
+        last_message[ngsi_lazy_attr_name] = new Date().getTime();
+        createSubscriberForLazyAttr(node,
+                              lazy_topic_type_str,
+                              lazy_topic_path_str,
+                              ngsi_lazy_attr_name, 
+                              1000);
+      });
+    node.spin(); 
+    });
+  }
+  else{
+    console.log("ROS2 System: Waiting for the IOTA");
+  }
+
+}
 
 // Aux Functions for IoTA Features
 ///////////////////////////////////
 function activateTheAgent(){
-  iotAgentLib.activate(configSrv.getConfig().iota, function (error) {
+  iotAgentLib.activate(config.getConfig().iota, function (error) {
     if (error) {
         console.log("There was an error activating the IOTA");
         process.exit(1);
     } else {
         iotAgentLib.setDataQueryHandler(queryContextHandler);
+        iotAgentLib.setCommandHandler(commandHandler);
         console.log("The IOTA started successfully!!");
     }
   });
@@ -119,7 +170,8 @@ function provisionROS2System(){
                                       "entity_name":ros2_system_conf.name,
                                       "entity_type": ros2_system_conf.type,
                                       "attributes":ros2_system_conf.attributes,
-                                      "lazy": ros2_system_conf.lazy_attrs}]})
+                                      "lazy": ros2_system_conf.lazy_attrs,
+                                      "commands": ros2_system_conf.commands} ]})
 
   };
   request(options, function (error, response) {
@@ -127,7 +179,6 @@ function provisionROS2System(){
     console.log(response.body);
   });
 }
-
 
 var waitUntilTheIotaIsReady =  function(){checkDeviceLoop = setInterval(checkDevice, 1000);};
 
@@ -147,73 +198,46 @@ function checkDevice(){
   });
 }
 
-function queryContextHandler(id, type, service, subservice, attributes, callback) {
-  var response = {};
-  response["id"]= id;
-  response["type"]= type;
-  for (var i = 0; i < attributes.length; i++) {
-      let attrObject = {};
-      attrObject["type"] = cached_ros2_msgs_for_lazy_attrs[attributes[i]].type;
-      attrObject["value"] = cached_ros2_msgs_for_lazy_attrs[attributes[i]].value;
-      response[attributes[i]] = attrObject;
-  }
-  callback(null, response);
+
+var generateCommandExecution = async function (service, subservice, deviceId, commandObj) {
+  var myDeviceInfo;
+  iotAgentLib.getDeviceByName(deviceId, service, subservice, function(error, dev) {
+    if (error) {
+        console.log(error);
+    } else {
+      myDeviceInfo = dev;
+    }
+  });
+  mySub = ros_node.createSubscription("std_msgs/msg/String", "/command", (msg) => {
+    // Update the Command
+    console.log(commandObj);
+    iotAgentLib.setCommandResult(device,
+                                iota_conf.default_resource,iota_conf.default_key,
+                                commandObj.name,
+                                ros2_commands.PUBLISH_CMD_RESULT,
+                                ros2_commands.PUBLISH_CMD_FINAL_STATUS,
+                                myDeviceInfo,
+      function(error, obj) {
+        if (error){
+          console.log(error);
+          config.getLogger().debug('Command updated with result: %s', error);
+        }
+        else{
+          console.log("The command was successfully updated");
+          console.log(obj);
+        }
+      })
+  });
 }
 
 
 // Aux Functions for ROS 2 Features
 ///////////////////////////////////
 
-var startTheROS2Loop =  function(){ros2Loop = setInterval(startROS, 1000);};
-
-function startROS(){
-  if(registered_devices_count>0){
-    clearInterval(ros2Loop);
-    console.log("ROS2 System: Starting ROS 2 Node");
-    rclnodejs.init().then(() => {
-      // Create the ROS 2 Node
-      const node = new rclnodejs.Node('iot_agent', 'ngsiv2');
-      
-      // Create a ROS 2 Subscriber for each Active Attribute
-      var ros_attributes = ros2_system_conf.attributes;
-      ros_attributes.forEach(element => {
-        let ngsi_attr_name = element.name;
-        let topic_type_str = ros2_system_conf.subscribers[ngsi_attr_name].topic_type;
-        let topic_path_str = ros2_system_conf.subscribers[ngsi_attr_name].topic_path;
-        last_message[ngsi_attr_name] = new Date().getTime();
-        createSubscriberForActiveAttr(node,
-                              topic_type_str,
-                              topic_path_str,
-                              ngsi_attr_name, 
-                              1000);
-      });
-      // Create a ROS 2 Subscriber for each Lazy Attribute
-      var ros_lazy_attrs = ros2_system_conf.lazy_attrs;
-        
-        ros_lazy_attrs.forEach(lazy_element => {
-        let ngsi_lazy_attr_name = lazy_element.name;
-        let lazy_topic_type_str = ros2_system_conf.subscribers[ngsi_lazy_attr_name].topic_type;
-        let lazy_topic_path_str = ros2_system_conf.subscribers[ngsi_lazy_attr_name].topic_path;
-        last_message[ngsi_lazy_attr_name] = new Date().getTime();
-        createSubscriberForLazyAttr(node,
-                              lazy_topic_type_str,
-                              lazy_topic_path_str,
-                              ngsi_lazy_attr_name, 
-                              1000);
-      });
-    node.spin(); 
-    });
-  }
-  else{
-    console.log("ROS2 System: Waiting for the IOTA");
-  }
-
-}
-
 /** 
 * Create a ROS 2 subscriber using rcl-nodejs
 *
-* @param {Onject} ros2_node ROS 2 Node 
+* @param {Object} ros2_node ROS 2 Node 
 * @param {String} topic_type_str A string which determines the ROS 2 Type of the subscription topic
 * @param {String} topic_path_str the path of the topic in the ROS 2 System
 * @param {String} ngsi_attr_name_str name of the NGSI attribute which will hold the topic data
@@ -273,8 +297,37 @@ function createSubscriberForLazyAttr(ros2_node, topic_type_str, topic_path_str, 
 
 }
 
+// Aux Function for Loading Configuration Variables
+///////////////////////////////////////////////////
+function readConfigurationParams(){
+  
+  config.setConfig({});
+  config.getLogger().info(context, config.getConfig());
+
+  // Read IoTA Service Configuration
+  iota_conf["server_host"] = config.getConfig().iota.server.host;
+  iota_conf["server_port"] = config.getConfig().iota.server.port;
+  iota_conf["cbroker_host"] = config.getConfig().iota.contextBroker.host;
+  iota_conf["cbroker_port"] = config.getConfig().iota.contextBroker.port;
+  iota_conf["default_type"] = config.getConfig().iota.defaultType;
+  iota_conf["default_key"] = config.getConfig().iota.defaultKey;
+  iota_conf["default_resource"] = config.getConfig().iota.defaultResource;
+  
+  // Read ROS 2 System Configuration
+  ros2_system_conf["id"]= config.getConfig().ros_2.system.iota_id;
+  ros2_system_conf["type"]= config.getConfig().ros_2.system.ngsiv2_type;
+  ros2_system_conf["name"]= config.getConfig().ros_2.system.ngsiv2_id;
+  ros2_system_conf["service"]= config.getConfig().ros_2.system.service;
+  ros2_system_conf["subservice"]= config.getConfig().ros_2.system.subservice;
+  ros2_system_conf["attributes"] = config.getConfig().ros_2.system.ngsiv2_active_attrs;
+  ros2_system_conf["lazy_attrs"] = config.getConfig().ros_2.system.ngsiv2_lazy_attrs;
+  ros2_system_conf["commands"] = config.getConfig().ros_2.system.ngsiv2_commands;
+  ros2_system_conf["subscribers"] = config.getConfig().ros_2.subscribers;
+
+}
+
 // Sys Functions
-/////////////////////
+////////////////
 process.on('SIGINT', function() {
   console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
   // some other closing procedures go here

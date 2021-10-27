@@ -55,7 +55,8 @@ function processEnvironmentVariables() {
         "service": "ros2iot",
         "subservice": "/",   
    	    "ngsiv2_active_attrs": [],//[ {name:"turtlePose", type:"Object"} ],
-        "ngsiv2_lazy_attrs": [{name:"turtleColor", type:"Object"}, {name:"turtlePose", type:"Object"}]   
+        "ngsiv2_lazy_attrs": [{name:"turtleColor", type:"Object"}, {name:"turtlePose", type:"Object"}],
+        "ngsiv2_commands": [{name:"publish", type:"command"}]   
     };
     
     //  Bridge configuration for ROS 2 Subscribers:
