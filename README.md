@@ -52,7 +52,7 @@ cd iot-agent
 ```
 
 3. Install the quired Node.js dependencies
-````
+```
 npm install
 ```
 
