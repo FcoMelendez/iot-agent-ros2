@@ -80,7 +80,7 @@ ros2 run turtlesim turtlesim_node
 ``` 
 
 ### Run the Agent
-
+Open a console, go to the "iot-agent/lib" folder and run the following command
 ```
 node index.js
 ``` 
