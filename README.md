@@ -28,8 +28,7 @@ The current version creates one single NGSI entity. A default configuration for 
 
 The custom behavior of the agent needs to be configured through a collection of Active, Lazy and Command attributes in the config file. It is expected that the ROS 2 counterpart of NGSI attributes and commands (i.e., ROS 2 Topics, Service and Action Servers) is known and given to the agent through convenient inputs in the config file. 
 
-
-### Use Cases
+The first collection of use cases selected for this IoT Agent is listed below:
 
 1. ROS 2 Topic Message (Read by ROS 2 Subscriber) --> Agent updates an Active NGSIv2 Attribute
 2. NGSIv2 Query to Lazy Attribute(s) --> Agent reads Topic Message from ROS 2 Subscriber(s) and sends the NGSIv2 Response
