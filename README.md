@@ -55,11 +55,21 @@ cd iot-agent
 ```
 npm install
 ```
-
 ## Hello World
 
-### Run the Turtlesim Node
+### Run the Agent
+```
+node index.js
+``` 
 
+## Demo
+
+### Run the Orion Context Broker
+
+...(Docker-compose)
+
+### Run the Turtlesim Node
+Open a console and run the Turtlesim Node with the following command
 ```
 ros2 run turtlesim turtlesim_node
 ``` 
