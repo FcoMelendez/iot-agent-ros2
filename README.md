@@ -51,7 +51,7 @@ git clone https://github.com/FcoMelendez/iot-agent-ros2.git
 cd iot-agent
 ```
 
-3. Install the quired Node.js dependencies
+3. Install the required Node.js dependencies
 ```
 npm install
 ```
