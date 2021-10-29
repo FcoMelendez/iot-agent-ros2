@@ -1,7 +1,9 @@
 # iot-agent-ros2
 Welcome to the ROS 2 IoT Agent Repository...
 1. [Introduction](#intro)
-
+2. [ROS 2 IoT Agent Installation](#installation) 
+3. [Hello World](#hello)
+4. [Demo](#demo) 
 
 ## <a name="intro"></a> Introduction
 
@@ -35,7 +37,7 @@ The custom behavior of the agent needs to be configured through a collection of 
 4. NGSIv2 Command *call_srv* --> Service Call made by ROS 2 Service Client (TBD)
 5. NGSIv2 Command *call_action* --> Action Call made by ROS 2 Action Client (TBD)
 
-## ROS 2 IoT Agent Installation
+## <a name="installation"></a> ROS 2 IoT Agent Installation
 
 ### Prerequisites
 
@@ -58,14 +60,14 @@ cd iot-agent
 ```
 npm install
 ```
-## Hello World
+## <a name="hello"></a> Hello World
 
 ### Run the Agent
 ```
 node index.js
 ``` 
 
-## Demo
+## <a name="demo"></a> Demo
 
 ### Run the Orion Context Broker
 
