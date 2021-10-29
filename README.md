@@ -79,3 +79,11 @@ ros2 run turtlesim turtlesim_node
 ```
 node index.js
 ``` 
+
+### Use Cases
+
+#### Use Case 1 (Active Attribute): Monitoring the Turtle Pose 
+* Display the pose of the turtle in the web-based GUI
+* Run the turtle teleoperation node
+* Drive the turtle and see how the pose changes in the GUI
+
