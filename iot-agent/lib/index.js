@@ -7,6 +7,7 @@ var config = require('./configService'),
       op: 'IoTA-ROS2.Agent'
     };
 
+// App Constant
 // App Variables
 var last_message = {};
 var ros2_system_conf = {};
@@ -15,7 +16,7 @@ var checkDeviceLoop = {};
 var ros2Loop = {};
 var registered_devices_count = 0;
 var cached_ros2_msgs_for_lazy_attrs = {};
-var ros_node = {}
+var ros2_node;
 
 // ROS 2 Commands
 // Constants
@@ -45,6 +46,14 @@ function start() {
  
   // 3. Start the ROS 2 middleware
   // -----------------------------
+  // Crete the ROS 2 Node which will handle the south port of the IoT Agent
+  // Create ROS 2 subscribers which will update NGSI Active Attributes
+  // Create ROS 2 subscribers which will cache the last message and serve it as NGSI Lazy Attributes
+  // When NGSI commands are received the "commandHandler" function will take care of them
+  //   Allowed NGSI Command types:
+  //   - publish (Topic Message)
+  //   - call_srv (Call Service as a ROS 2 Service Client)
+  //   - call_action (Call action as a ROS 2 Action Client)
   startTheROS2Loop();
 
 }
@@ -67,6 +76,10 @@ function queryContextHandler(id, type, service, subservice, attributes, callback
 function commandHandler(deviceId, type, service, subservice, attributes, callback) {
   // ToDo: generate command exsecution for the whole command array
   // ToDo: validate the command payload (Check it is a convenient ROS Message)
+  console.log("---------");
+  console.log(deviceId);
+  console.log("---------");
+  console.log(attributes);
   var cmdObj = attributes[0];
   generateCommandExecution(service, subservice, deviceId, cmdObj);
   callback();
@@ -75,7 +88,8 @@ function commandHandler(deviceId, type, service, subservice, attributes, callbac
 // Main ROS 2 Loop
 //////////////////
 
-var startTheROS2Loop =  function(){ros2Loop = setInterval(startROS, 1000);};
+var startTheROS2Loop =  function(){ros2Loop = setInterval(startROS, 1000);}; // Wait for the ROS System to be provisioned
+                                                                             // Then start the ROS 2 Node 
 
 function startROS(){
   if(registered_devices_count>0){
@@ -83,10 +97,10 @@ function startROS(){
     console.log("ROS2 System: Starting ROS 2 Node");
     rclnodejs.init().then(() => {
       // Create the ROS 2 Node
-      const node = new rclnodejs.Node('iot_agent', 'ngsiv2');
-      ros_node = node;
+      ros2_node = new rclnodejs.Node('iot_agent', 'ngsiv2');
+      
       // Create a ROS 2 Subscriber for each Active Attribute
-      var ros_attributes = ros2_system_conf.attributes;
+     /* var ros_attributes = ros2_system_conf.attributes;
       ros_attributes.forEach(element => {
         let ngsi_attr_name = element.name;
         let topic_type_str = ros2_system_conf.subscribers[ngsi_attr_name].topic_type;
@@ -97,7 +111,7 @@ function startROS(){
                               topic_path_str,
                               ngsi_attr_name, 
                               1000);
-      });
+      });*/
       // Create a ROS 2 Subscriber for each Lazy Attribute
       var ros_lazy_attrs = ros2_system_conf.lazy_attrs;
         
@@ -106,13 +120,13 @@ function startROS(){
         let lazy_topic_type_str = ros2_system_conf.subscribers[ngsi_lazy_attr_name].topic_type;
         let lazy_topic_path_str = ros2_system_conf.subscribers[ngsi_lazy_attr_name].topic_path;
         last_message[ngsi_lazy_attr_name] = new Date().getTime();
-        createSubscriberForLazyAttr(node,
+        createSubscriberForLazyAttr(ros2_node,
                               lazy_topic_type_str,
                               lazy_topic_path_str,
                               ngsi_lazy_attr_name, 
                               1000);
       });
-    node.spin(); 
+    ros2_node.spin(); 
     });
   }
   else{
@@ -169,6 +183,7 @@ function provisionROS2System(){
     body: JSON.stringify({"devices":[{"device_id": ros2_system_conf.id,
                                       "entity_name":ros2_system_conf.name,
                                       "entity_type": ros2_system_conf.type,
+                                      "apikey": iota_conf.default_key, 
                                       "attributes":ros2_system_conf.attributes,
                                       "lazy": ros2_system_conf.lazy_attrs,
                                       "commands": ros2_system_conf.commands} ]})
@@ -208,26 +223,42 @@ var generateCommandExecution = async function (service, subservice, deviceId, co
       myDeviceInfo = dev;
     }
   });
-  mySub = ros_node.createSubscription("std_msgs/msg/String", "/command", (msg) => {
+  var ros2_command_type = commandObj.value.rosCmd;
+  //  if command type is: 
+  //    "publish"     -> Create publisher, publish message, update command result
+  //    "call_srv"    -> Create Service Client, call Service, update command result
+  //    "call_action" -> Create Action Client, call Action, start handler of async command results
+  //    Otherwise return "unknown_command" 
+  if (ros2_command_type == "publish")
+  {
+    publishNgsiCommandAsROS2TopicMessage(commandObj);
     // Update the Command
-    console.log(commandObj);
-    iotAgentLib.setCommandResult(device,
-                                iota_conf.default_resource,iota_conf.default_key,
-                                commandObj.name,
-                                ros2_commands.PUBLISH_CMD_RESULT,
-                                ros2_commands.PUBLISH_CMD_FINAL_STATUS,
-                                myDeviceInfo,
+    iotAgentLib.setCommandResult(deviceId,
+      iota_conf.default_resource,iota_conf.default_key,
+      commandObj.name,
+      ros2_commands.PUBLISH_CMD_RESULT,
+      ros2_commands.PUBLISH_CMD_FINAL_STATUS,
+      myDeviceInfo,
       function(error, obj) {
         if (error){
           console.log(error);
-          config.getLogger().debug('Command updated with result: %s', error);
+          config.getLogger().debug('Error in Command Update: %s', error);
         }
         else{
           console.log("The command was successfully updated");
           console.log(obj);
         }
-      })
-  });
+      });
+  }
+  else if(ros2_command_type == "call_srv") 
+  {
+    publishNgsiCommandAsROS2ServiceCall(commandObj, deviceId, myDeviceInfo);
+  }
+  else if(ros2_command_type == "call_srv") 
+  {
+    publishNgsiCommandAsROS2ActionCall(commandObj, deviceId, myDeviceInfo);
+  }  
+
 }
 
 
@@ -253,12 +284,165 @@ function createSubscriberForActiveAttr(ros2_node, topic_type_str, topic_path_str
     let diff = Math.abs(time_stamp - last_time_stamp);
     if (diff > throttling_ms_int) 
     {
-      console.log(`Received message: ${typeof msg}`, msg);
+      //console.log(`Received message: ${typeof msg}`, msg); //fmf
       last_message[ngsi_attr_name_str] = new Date().getTime();
       sendROS2MessageAsActiveAttribute(ngsi_attr_name_str, msg);
     }
   });
 
+}
+
+function createSubscriberForLazyAttr(ros2_node, topic_type_str, topic_path_str, ngsi_attr_name_str,throttling_ms_int)
+{
+    last_message[ngsi_attr_name_str] = 0;
+    ros2_node.createSubscription(topic_type_str, topic_path_str, (msg) => {
+    let last_time_stamp = last_message[ngsi_attr_name_str];
+    let time_stamp = new Date().getTime();
+    let diff = Math.abs(time_stamp - last_time_stamp);
+    if (diff > throttling_ms_int) 
+    {
+      var messageObject = {"name":ngsi_attr_name_str, "type":"Object", "value":msg};
+      cached_ros2_msgs_for_lazy_attrs[ngsi_attr_name_str] = messageObject;
+      last_message[ngsi_attr_name_str] = new Date().getTime();
+    }
+  });
+
+}
+
+function publishNgsiCommandAsROS2TopicMessage(ngsiCommand){
+  var command_value = ngsiCommand.value;
+  var refCommandValueObject = {rosCmd:"",topic_path:"",topic_type:"",messageObj:{}};
+  var isValidCmdValue = deepMessageStructureCheck(refCommandValueObject, command_value, 1);
+
+  if (isValidCmdValue){
+    var referenceMessageObj = rclnodejs.createMessageObject(command_value.topic_type);
+    var ros2MessageObj = command_value.messageObj; 
+    var isValidMessageObj = deepMessageStructureCheck(referenceMessageObj, ros2MessageObj);
+    if (isValidMessageObj){
+      console.log(referenceMessageObj);
+      console.log(command_value.messageObj);
+      var publisher = ros2_node.createPublisher(command_value.topic_type, command_value.topic_path);
+      publisher.publish(command_value.messageObj);+
+      delete publisher;
+    }
+    else{
+      console.log("Wrong 'messageObject' structure for "+commandValueObject.topic_type+ ", the correct structure is:");
+      console.log(referenceMessageObj);
+      console.log("check the complete message definition at:");
+      var msg_type_array = command_value.topic_type.split("/");
+      console.log("http://docs.ros.org/en/melodic/api/"+msg_type_array[0]+"/html/msg/"+msg_type_array[2]+".html");
+    }
+  }
+  else if(!isValidCmdValue){
+    console.log("Wrong NGSI 'publish' command for ROS2 systems. The correct structure is:");
+    console.log(refCommandValueObject);
+    console.log("Yours is:");
+    console.log(command_value);
+  }
+  else{
+    console.log("This is not a 'publish' command");
+  }
+}
+
+function publishNgsiCommandAsROS2ServiceCall(ngsiCommand, device_id, device_info){
+  var command_value = ngsiCommand.value;
+  var refCommandValueObject = {rosCmd:"",srv_type:"", srv_name:"", requestObj:{}};
+  var isValidCmdValue = deepMessageStructureCheck(refCommandValueObject, command_value, 1);
+  if (isValidCmdValue){
+    console.log("Service Calling!!!!!!!!!!");
+    // TODO: Find a way to validate service request and add convenient code here
+    console.log(command_value);
+    var srv_manager = ros2_node.createClient(command_value.srv_type, command_value.srv_name);
+    srv_manager.sendRequest(command_value.requestObj, function(response){
+      // Update the NGSI Command
+      iotAgentLib.setCommandResult(device_id,
+        iota_conf.default_resource,iota_conf.default_key,
+        ngsiCommand.name,
+        response,
+        ros2_commands.PUBLISH_CMD_FINAL_STATUS,
+        device_info,
+        function(error, obj) {
+          if (error){
+            console.log(error);
+            config.getLogger().debug('Error in Command Update: %s', error);
+          }
+          else{
+            console.log("The command was successfully updated");
+            console.log("Service Response: %s", JSON.stringify(response, null, 2));
+          }
+        });
+    });
+    
+  }
+  else{
+    console.log("Wrong NGSI 'publish' command for ROS2 systems. The correct structure is:");
+    console.log(refCommandValueObject);
+    console.log("Yours is:");
+    console.log(command_value);
+  }
+}
+
+function publishNgsiCommandAsROS2ActionCall(ngsiCommand, device_id, device_info){
+  var command_value = ngsiCommand.value;
+  var refCommandValueObject = {rosCmd:"",srv_type:"", srv_name:"", requestObj:{}};
+  var isValidCmdValue = deepMessageStructureCheck(refCommandValueObject, command_value, 1);
+  if (isValidCmdValue){
+    console.log("Service Calling!!!!!!!!!!");
+    // TODO: Find a way to validate service request and add convenient code here
+    console.log(command_value);
+    var srv_manager = ros2_node.createClient(command_value.srv_type, command_value.srv_name);
+    srv_manager.sendRequest(command_value.requestObj, function(response){
+      // Update the NGSI Command
+      iotAgentLib.setCommandResult(device_id,
+        iota_conf.default_resource,iota_conf.default_key,
+        ngsiCommand.name,
+        response,
+        ros2_commands.PUBLISH_CMD_FINAL_STATUS,
+        device_info,
+        function(error, obj) {
+          if (error){
+            console.log(error);
+            config.getLogger().debug('Error in Command Update: %s', error);
+          }
+          else{
+            console.log("The command was successfully updated");
+            console.log("Service Response: %s", JSON.stringify(response, null, 2));
+          }
+        });
+    });
+    
+  }
+  else{
+    console.log("Wrong NGSI 'publish' command for ROS2 systems. The correct structure is:");
+    console.log(refCommandValueObject);
+    console.log("Yours is:");
+    console.log(command_value);
+  }
+}
+
+function deepMessageStructureCheck(object1, object2, max_level=999) {
+  if(max_level > 0)
+  {
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+    for (const key of keys1) {
+      const val1 = object1[key];
+      const val2 = object2[key];
+      const areObjects = isObject(val1) && isObject(val2);
+      new_max = max_level - 1;
+      if (areObjects && !deepMessageStructureCheck(val1, val2, new_max)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isObject(object) {
+  return object != null && typeof object === 'object';
 }
 
 function sendROS2MessageAsActiveAttribute(ngsi_attribute_name, ros2_message)
@@ -279,23 +463,7 @@ function sendROS2MessageAsActiveAttribute(ngsi_attribute_name, ros2_message)
   });
 }
 
-function createSubscriberForLazyAttr(ros2_node, topic_type_str, topic_path_str, ngsi_attr_name_str,throttling_ms_int)
-{
-    last_message[ngsi_attr_name_str] = 0;
-    ros2_node.createSubscription(topic_type_str, topic_path_str, (msg) => {
-    let last_time_stamp = last_message[ngsi_attr_name_str];
-    let time_stamp = new Date().getTime();
-    let diff = Math.abs(time_stamp - last_time_stamp);
-    if (diff > throttling_ms_int) 
-    {
-      console.log(`Received message: ${typeof msg}`, msg);
-      var messageObject = {"name":ngsi_attr_name_str, "type":"Object", "value":msg};
-      cached_ros2_msgs_for_lazy_attrs[ngsi_attr_name_str] = messageObject;
-      last_message[ngsi_attr_name_str] = new Date().getTime();
-    }
-  });
 
-}
 
 // Aux Function for Loading Configuration Variables
 ///////////////////////////////////////////////////

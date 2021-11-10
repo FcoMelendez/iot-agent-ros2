@@ -23,13 +23,13 @@ function processEnvironmentVariables() {
     config.iota = {
         logLevel: 'DEBUG',
         contextBroker: {
-            host: '192.168.1.104', //192.168.1.15
+            host: '192.168.1.15', //192.168.1.15
             port: '1026',
             ngsiVersion: 'v2'
         },
         server: {
             port: 4061,
-            host: '192.168.1.131' //192.168.1.18
+            host: '192.168.1.18' //192.168.1.18
         },
         deviceRegistry: {
             type: 'memory'
@@ -37,7 +37,7 @@ function processEnvironmentVariables() {
         types: {},
         service: 'ros2iot',
         subservice: '/',
-        providerUrl: 'http://192.168.1.131:4061', //http://192.168.1.18:4061
+        providerUrl: 'http://192.168.1.18:4061', //http://192.168.1.18:4061
         defaultResource: '/',
         defaultType: 'ROS2System',
         defaultKey: 'abc'
@@ -54,9 +54,11 @@ function processEnvironmentVariables() {
         "ngsiv2_id": "urn:ngsiv2:ROS2System:0001",
         "service": "ros2iot",
         "subservice": "/",   
-   	    "ngsiv2_active_attrs": [],//[ {name:"turtlePose", type:"Object"} ],
-        "ngsiv2_lazy_attrs": [{name:"turtleColor", type:"Object"}, {name:"turtlePose", type:"Object"}],
-        "ngsiv2_commands": [{name:"publish", type:"command"}]   
+   	    "ngsiv2_active_attrs": [ {name:"turtlePose", type:"Object"} ],// {name:"turtleVel", type:"Object"} ],//[],//[ {name:"turtlePose", type:"Object"} ],
+        "ngsiv2_lazy_attrs":[{name:"turtleColor", type:"Object"}],// [{name:"turtleColor", type:"Object"}, {name:"turtlePose", type:"Object"}],*/
+        "ngsiv2_commands": [{name:"moveCmd", type:"command"},
+                            {name:"spawnSrvCmd", type:"command"},
+                            {name:"rotateAbsActionCmd", type:"command"}] //[{name:"publishTwist", type:"command"}]   
     };
     
     //  Bridge configuration for ROS 2 Subscribers:
