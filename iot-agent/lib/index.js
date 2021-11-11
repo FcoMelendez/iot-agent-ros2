@@ -254,7 +254,7 @@ var generateCommandExecution = async function (service, subservice, deviceId, co
   {
     publishNgsiCommandAsROS2ServiceCall(commandObj, deviceId, myDeviceInfo);
   }
-  else if(ros2_command_type == "call_srv") 
+  else if(ros2_command_type == "call_action") 
   {
     publishNgsiCommandAsROS2ActionCall(commandObj, deviceId, myDeviceInfo);
   }  
@@ -383,42 +383,55 @@ function publishNgsiCommandAsROS2ServiceCall(ngsiCommand, device_id, device_info
 }
 
 function publishNgsiCommandAsROS2ActionCall(ngsiCommand, device_id, device_info){
+  var command_name = ngsiCommand.name;
   var command_value = ngsiCommand.value;
-  var refCommandValueObject = {rosCmd:"",srv_type:"", srv_name:"", requestObj:{}};
+  var refCommandValueObject = {rosCmd:"", actionType:"", actionName:"", goalObj:{}};
   var isValidCmdValue = deepMessageStructureCheck(refCommandValueObject, command_value, 1);
+  
   if (isValidCmdValue){
-    console.log("Service Calling!!!!!!!!!!");
     // TODO: Find a way to validate service request and add convenient code here
     console.log(command_value);
-    var srv_manager = ros2_node.createClient(command_value.srv_type, command_value.srv_name);
-    srv_manager.sendRequest(command_value.requestObj, function(response){
-      // Update the NGSI Command
-      iotAgentLib.setCommandResult(device_id,
-        iota_conf.default_resource,iota_conf.default_key,
-        ngsiCommand.name,
-        response,
-        ros2_commands.PUBLISH_CMD_FINAL_STATUS,
-        device_info,
-        function(error, obj) {
-          if (error){
-            console.log(error);
-            config.getLogger().debug('Error in Command Update: %s', error);
-          }
-          else{
-            console.log("The command was successfully updated");
-            console.log("Service Response: %s", JSON.stringify(response, null, 2));
-          }
-        });
-    });
-    
+    var action_result={};
+    sendGoal(command_value, command_name);
+}
+
+async function sendGoal(ngsi_command_value, ngsi_command_name){
+  var action_client = new rclnodejs.ActionClient(ros2_node, ngsi_command_value.actionType, ngsi_command_value.actionName);
+  // goalHandle is a "ClientGoalHandle", see http://robotwebtools.org/rclnodejs/docs/0.20.0/ClientGoalHandle.html
+  const goalHandle = await action_client.sendGoal(ngsi_command_value.goalObj, (feedback) => {
+    ros2_node.getLogger().info(`Received feedback: ${JSON.stringify(feedback)}`);
+  });
+  if (!goalHandle.accepted) {
+    ros2_node.getLogger().info('Goal rejected');
+    return;
   }
-  else{
-    console.log("Wrong NGSI 'publish' command for ROS2 systems. The correct structure is:");
-    console.log(refCommandValueObject);
-    console.log("Yours is:");
-    console.log(command_value);
+
+  ros2_node.getLogger().info('Goal accepted');
+  result = await goalHandle.getResult();
+  ros2_node.getLogger()
+  .info(`Goal suceeded with result: ${JSON.stringify(result)}`);
+  // Update the NGSI Command
+  iotAgentLib.setCommandResult(device_id,
+    iota_conf.default_resource,iota_conf.default_key,
+    ngsiCommand.name,
+    result.status,
+    ros2_commands.PUBLISH_CMD_FINAL_STATUS,
+    device_info,
+    function(error, obj) {
+        if (error){
+          console.log(error);
+          config.getLogger().debug('Error in Command Update: %s', error);
+        }
+        else{
+          console.log("The command was successfully updated");
+          console.log("Service Response: %s", JSON.stringify(obj, null, 2));
+        }
+      });
   }
 }
+
+
+
 
 function deepMessageStructureCheck(object1, object2, max_level=999) {
   if(max_level > 0)
