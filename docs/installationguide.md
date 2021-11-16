@@ -26,6 +26,8 @@ npm install
 ## Hello World
 
 ### Run the Agent
+
+Run the following command (iot-agent folder)
 ```
 node index.js
 ``` 
