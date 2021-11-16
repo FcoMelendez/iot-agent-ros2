@@ -43,13 +43,6 @@ The current collection of use cases selected for this IoT Agent is listed below:
 5. NGSIv2 Command *call_action* --> Action Call made by ROS 2 Action Client (TBD)
 
 ## <a name="install"></a> Install
-
-### Prerequisites
-
-* A ROS 2 installation is needed, either [Foxy](https://docs.ros.org/en/foxy/Installation.html) or [Galactic](https://docs.ros.org/en/galactic/Installation.html). The links attached will guide you through the ROS 2 installation.
-* Node.js is also required, it can be installed from [here](https://nodejs.org/en/download/)   
-
-### Installing the ROS 2 Agent
 Information about how to install the IoT Agent for ROS 2 can be found at the corresponding section of the
 [Installation & Administration Guide](docs/installationguide.md).
 
