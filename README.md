@@ -4,7 +4,7 @@
 [![Docker badge](https://img.shields.io/docker/pulls/fiware/iotagent-ul.svg)](https://hub.docker.com/r/fiware/iotagent-ul/)
 [![Support badge](https://nexus.lab.fiware.org/repository/raw/public/badges/stackoverflow/iot-agents.svg)](https://stackoverflow.com/questions/tagged/fiware+iot)
 <br/>
-[![Documentation badge](https://img.shields.io/readthedocs/fiware-iotagent-ul.svg)](https://iot-agent-ros2.readthedocs.io/en/latest/)
+[![Documentation badge](https://img.shields.io/readthedocs/fiware-iotagent-isoxml.svg)](https://fiware-iotagent-isoxml.readthedocs.io/en/latest/?badge=latest)
 
 (...)
 
