@@ -21,9 +21,7 @@ cd iot-agent
 ```
 npm install
 ```
-## <a name="usage"></a> Usage
-
-### Hello World
+## Hello World
 
 #### Run the Agent
 ```
