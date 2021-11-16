@@ -1,4 +1,4 @@
-# User & Programmers Manueal 
+# User & Programmers Manual 
 
 The agent relies on *rclnodejs* to interact with the ROS 2 architecture (south port of the agent). For NGSI interactions (north port of the agent), the agent follows the typical approach to FIWARE IoT Agents and builds on the *iotagent-node-lib*. 
 
