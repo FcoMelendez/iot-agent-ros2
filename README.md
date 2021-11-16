@@ -41,7 +41,7 @@ The ROS 2 IoT Agent enables ROS 2 architectures to interact with NGSI brokers. M
     * Async updates through Lazy NGSI Attributes
     * Device actuation through NGSI Commands  
 
-The agent relies on *rclnodejs* to interact with the ROS 2 architecture (south port of the agent). For NGSI interactions (north port of the agent), the agent follows the typical approach to FIWARE IoT Agents and builds on the *iotagent-node-lib*. 
+The agent relies on *rclnodejs* to interact with the ROS 2 architecture (south port of the agent). For NGSI interactions (north port), the agent follows the typical approach to FIWARE IoT Agents and builds on the *iotagent-node-lib*. 
 
 ## <a name="install"></a> Install
 Information about how to install the IoT Agent for ROS 2 can be found at the corresponding section of the
