@@ -8,7 +8,7 @@
 ## Installing the ROS 2 Agent
 
 Download the agent codebase
-```
+```bash
 git clone https://github.com/FcoMelendez/iot-agent-ros2.git
 ```
 
