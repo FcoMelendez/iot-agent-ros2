@@ -8,22 +8,20 @@
 ## Installing the ROS 2 Agent
 
 1. Download the agent codebase
-
 ```
 git clone https://github.com/FcoMelendez/iot-agent-ros2.git
-````
+```
 
 2. Go to the iot-agent folder
-
 ```
 cd iot-agent
 ```
 
 3. Install the required Node.js dependencies
-
 ```
 npm install
 ```
+
 ## Hello World
 
 ### Run the Agent
