@@ -15,8 +15,7 @@ extra_css:
   - 'https://www.fiware.org/style/fiware_readthedocs_iot.css'
 pages:
   - Home: index.md
-  - User & Programmers Manual:
-      - API Walkthrough & Development intro: usermanual.md
   - Installation & Administration Manual:
       - Installation Guide: installationguide.md
-      - Operations (Agent Use Cases): operations.md
+  - User & Programmers Manual:
+      - API Walkthrough & Development intro: usermanual.md
