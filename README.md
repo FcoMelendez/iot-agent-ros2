@@ -1,11 +1,17 @@
 # iot-agent-ros2
 Welcome to the ROS 2 IoT Agent Repository...
-1. [Introduction](#intro)
-2. [ROS 2 IoT Agent Installation](#installation) 
-3. [Hello World](#hello)
-4. [Demo](#demo) 
 
-## <a name="intro"></a> Introduction
+
+## Content
+
+1. [Background](#intro)
+2. [Install](#install) 
+3. [Usage](#usage)
+4. [API](#api)
+5. [Testing](#testing) 
+6. [License](#license) 
+
+## <a name="background"></a> Background
 
 The ROS 2 IoT Agent enables ROS 2 architectures to interact with NGSI brokers. More specifically, the aim of this agent is to bridge the following interaction patterns
 
@@ -36,7 +42,7 @@ The first collection of use cases selected for this IoT Agent is listed below:
 4. NGSIv2 Command *call_srv* --> Service Call made by ROS 2 Service Client (TBD)
 5. NGSIv2 Command *call_action* --> Action Call made by ROS 2 Action Client (TBD)
 
-## <a name="installation"></a> ROS 2 IoT Agent Installation
+## <a name="install"></a> Install
 
 ### Prerequisites
 
@@ -59,35 +65,48 @@ cd iot-agent
 ```
 npm install
 ```
-## <a name="hello"></a> Hello World
+## <a name="usage"></a> Usage
 
-### Run the Agent
+### Hello World
+
+#### Run the Agent
 ```
 node index.js
 ``` 
 
-## <a name="demo"></a> Demo
+### <a name="demo"></a> Demo
 
-### Run the Orion Context Broker
+#### Run the Orion Context Broker
 
 ...(Docker-compose)
 
-### Run the Turtlesim Node
+#### Run the Turtlesim Node
 Open a console and run the Turtlesim Node with the following command
 ```
 ros2 run turtlesim turtlesim_node
 ``` 
 
-### Run the Agent
+#### Run the Agent
 Open a console, go to the "iot-agent/lib" folder and run the following command
 ```
 node index.js
 ``` 
 
-### Use Cases
+#### Use Cases
 
-#### Use Case 1 (Active Attribute): Monitoring the Turtle Pose 
+##### Use Case 1 (Active Attribute): Monitoring the Turtle Pose 
 * Display the pose of the turtle in the web-based GUI
 * Run the turtle teleoperation node
 * Drive the turtle and see how the pose changes in the GUI
 
+## <a name="api"></a> API
+
+TBD
+
+## <a name="testing"></a> Testing
+
+TBD
+
+## <a name="license"></a> License
+
+TBD
