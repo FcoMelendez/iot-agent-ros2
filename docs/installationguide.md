@@ -13,12 +13,12 @@ git clone https://github.com/FcoMelendez/iot-agent-ros2.git
 ```
 
 Go to the iot-agent folder
-```
+```bash
 cd iot-agent
 ```
 
 Install the required Node.js dependencies
-```
+```bash
 npm install
 ```
 
@@ -27,6 +27,6 @@ npm install
 ### Run the Agent
 
 Run the following command (iot-agent folder)
-```nodejs
+```bash
 node index.js
 ``` 
