@@ -50,34 +50,13 @@ The first collection of use cases selected for this IoT Agent is listed below:
 * Node.js is also required, it can be installed from [here](https://nodejs.org/en/download/)   
 
 ### Installing the ROS 2 Agent
-Information about how to install the IoT Agent for ISOXML/ADAPT can be found at the corresponding section of the
+Information about how to install the IoT Agent for ROS 2 can be found at the corresponding section of the
 [Installation & Administration Guide](docs/installationguide.md).
 
 
-### <a name="demo"></a> Demo
+### <a name="usage"></a> Usage
 
-#### Run the Orion Context Broker
-
-...(Docker-compose)
-
-#### Run the Turtlesim Node
-Open a console and run the Turtlesim Node with the following command
-```
-ros2 run turtlesim turtlesim_node
-``` 
-
-#### Run the Agent
-Open a console, go to the "iot-agent/lib" folder and run the following command
-```
-node index.js
-``` 
-
-#### Use Cases
-
-##### Use Case 1 (Active Attribute): Monitoring the Turtle Pose 
-* Display the pose of the turtle in the web-based GUI
-* Run the turtle teleoperation node
-* Drive the turtle and see how the pose changes in the GUI
+Information about how to use the IoT Agent can be found in the [User & Programmers Manual](docs/usermanual.md).
 
 ## <a name="api"></a> API
 
