@@ -1,4 +1,4 @@
-# Installation and Administration Guide
+# Installation & Administration Guide
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ npm install
 ```
 ## Hello World
 
-#### Run the Agent
+### Run the Agent
 ```
 node index.js
 ``` 
