@@ -1,7 +1,6 @@
 # Iot Agent for the Robot Operating System (ROS 2)
 [![FIWARE IoT Agents](https://nexus.lab.fiware.org/static/badges/chapters/iot-agents.svg)](https://www.fiware.org/developers/catalogue/)
 [![License: APGL](https://img.shields.io/github/license/telefonicaid/iotagent-ul.svg)](https://opensource.org/licenses/AGPL-3.0)
-[![Docker badge](https://img.shields.io/docker/pulls/fiware/iotagent-ul.svg)](https://hub.docker.com/r/fiware/iotagent-ul/)
 [![Documentation badge](https://img.shields.io/readthedocs/iot-agent-ros2.svg)](https://iot-agent-ros2.readthedocs.io/en/latest/?badge=latest)
 
 An Internet of Things Agent for the Robot Operating System (ROS 2) (with [HTTP](https://www.ros.org)). This IoT Agent is
