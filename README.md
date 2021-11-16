@@ -54,7 +54,7 @@ Information about how to install the IoT Agent for ROS 2 can be found at the cor
 [Installation & Administration Guide](docs/installationguide.md).
 
 
-### <a name="usage"></a> Usage
+## <a name="usage"></a> Usage
 
 Information about how to use the IoT Agent can be found in the [User & Programmers Manual](docs/usermanual.md).
 
