@@ -1,7 +1,6 @@
 # Installation and Administration Guide
 
-## Prerequisites
-The following dependencies shall be installed:
+**Prerequisites**
 
 * A ROS 2 installation is needed, either [Foxy](https://docs.ros.org/en/foxy/Installation.html) or [Galactic](https://docs.ros.org/en/galactic/Installation.html). The links attached will guide you through the ROS 2 installation
 * Node.js is also required, it can be installed from [here](https://nodejs.org/en/download/)
