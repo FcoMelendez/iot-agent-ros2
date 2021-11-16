@@ -16,3 +16,28 @@ The current collection of use cases selected for this IoT Agent is listed below:
 3. NGSIv2 Command *publish* --> Message Published by ROS 2 Publisher
 4. NGSIv2 Command *call_srv* --> Service Call made by ROS 2 Service Client (TBD)
 5. NGSIv2 Command *call_action* --> Action Call made by ROS 2 Action Client (TBD)
+
+## Demo
+
+### Run the Orion Context Broker
+
+...(Docker-compose)
+
+### Run the Turtlesim Node
+Open a console and run the Turtlesim Node with the following command
+```
+ros2 run turtlesim turtlesim_node
+``` 
+
+### Run the Agent
+Open a console, go to the "iot-agent/lib" folder and run the following command
+```
+node index.js
+``` 
+
+### Use Cases
+
+#### Use Case 1 (Active Attribute): Monitoring the Turtle Pose 
+* Display the pose of the turtle in the web-based GUI
+* Run the turtle teleoperation node
+* Drive the turtle and see how the pose changes in the GUI
