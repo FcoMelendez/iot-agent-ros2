@@ -20,7 +20,7 @@ The [User Manual](usermanual.md) and the [Admin Guide](installationguide.md) of 
 This project is part of [FIWARE](https://www.fiware.org/). For more information check the FIWARE Catalogue entry for the
 [IoT Agents](https://github.com/Fiware/catalogue/tree/master/iot-agents).
 
-| :books: [Documentation](https://iot-agent-ros2.readthedocs.io/en/latest/) | :dart: [Roadmap](https://github.com/telefonicaid/iotagent-ul/blob/master/docs/roadmap.md) |
+| :books: [Documentation](https://iot-agent-ros2.readthedocs.io/en/latest/) | :dart: [Roadmap](docs/roadmap.md) |
 | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 
 ## Content
