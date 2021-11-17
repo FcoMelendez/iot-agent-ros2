@@ -17,7 +17,7 @@ The current collection of use cases selected for this IoT Agent is listed below:
 4. NGSIv2 Command *call_srv* --> Service Call made by ROS 2 Service Client
 5. NGSIv2 Command *call_action* --> Action Call made by ROS 2 Action Client
 
-## Demo
+## Demo (WIP)
 
 ### Run the Orion Context Broker
 
