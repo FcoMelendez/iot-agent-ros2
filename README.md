@@ -12,8 +12,7 @@ interface of a context broker.
 
 This _Internet of Things Agent_ is a bridge that can be used to communicate devices
 using the ROS 2 Middleware and NGSI Context Brokers (like [Orion](https://github.com/telefonicaid/fiware-orion)). 
-The south port of the agent implements a ROS 2 client which is based on the [rclnodejs](https://github.com/RobotWebTools/rclnodejs) library.  
-The north port handles the NGSI interactions and is based on the [IoT Agent Node.js Library](https://github.com/telefonicaid/iotagent-ul/blob/master/README.md). Further general information about the FIWARE IoT Agents framework, its architecture and the common interaction model can be found in the library's GitHub repository.
+The south port of the agent implements a ROS 2 client which is based on the [rclnodejs](https://github.com/RobotWebTools/rclnodejs) library. The north port handles the NGSI interactions and is based on the [IoT Agent Node.js Library](https://github.com/telefonicaid/iotagent-ul/blob/master/README.md). Further general information about the FIWARE IoT Agents framework, its architecture and the common interaction model can be found in the library's GitHub repository.
 
 The [User Manual](usermanual.md) and the [Admin Guide](installationguide.md) of the ROS 2 IoT Agent cover more advanced topics of this robotics interface for NGSI brokers.
 
