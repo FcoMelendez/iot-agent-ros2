@@ -17,5 +17,6 @@ jobs:
       - name: Run EsLint Node.js Linter
         run: |
           cd iot-agent
+          npm install eslint-config-tamia --save-dev
           npm install
           npm run lint
