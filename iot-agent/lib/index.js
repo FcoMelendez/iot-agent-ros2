@@ -100,18 +100,18 @@ function startROS(){
       ros2_node = new rclnodejs.Node('iot_agent', 'ngsiv2');
       
       // Create a ROS 2 Subscriber for each Active Attribute
-     /* var ros_attributes = ros2_system_conf.attributes;
+      var ros_attributes = ros2_system_conf.attributes;
       ros_attributes.forEach(element => {
         let ngsi_attr_name = element.name;
         let topic_type_str = ros2_system_conf.subscribers[ngsi_attr_name].topic_type;
         let topic_path_str = ros2_system_conf.subscribers[ngsi_attr_name].topic_path;
         last_message[ngsi_attr_name] = new Date().getTime();
-        createSubscriberForActiveAttr(node,
+        createSubscriberForActiveAttr(ros2_node,
                               topic_type_str,
                               topic_path_str,
                               ngsi_attr_name, 
                               1000);
-      });*/
+      });
       // Create a ROS 2 Subscriber for each Lazy Attribute
       var ros_lazy_attrs = ros2_system_conf.lazy_attrs;
         

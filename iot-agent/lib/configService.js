@@ -23,13 +23,13 @@ function processEnvironmentVariables() {
     config.iota = {
         logLevel: 'DEBUG',
         contextBroker: {
-            host: '192.168.1.104', //192.168.1.15
+            host: 'localhost', //192.168.1.15
             port: '1026',
             ngsiVersion: 'v2'
         },
         server: {
             port: 4061,
-            host: '192.168.1.131' //192.168.1.18
+            host: 'localhost' //192.168.1.18
         },
         deviceRegistry: {
             type: 'memory'
@@ -37,7 +37,7 @@ function processEnvironmentVariables() {
         types: {},
         service: 'ros2iot',
         subservice: '/',
-        providerUrl: 'http://192.168.1.131:4061', //http://192.168.1.18:4061
+        providerUrl: 'http://localhost:4061', //http://192.168.1.18:4061
         defaultResource: '/',
         defaultType: 'ROS2System',
         defaultKey: 'abc'
