@@ -16,5 +16,6 @@ jobs:
           node-version: 12.x
       - name: Run EsLint Node.js Linter
         run: |
+          cd ../iot-agent
           npm install
           npm run lint
