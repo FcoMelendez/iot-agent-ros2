@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "eslint": "~7.5.0",
-    "eslint-config-tamia": "~7.2.5",
+    "eslint-config-tamia": "*", 
     "eslint-plugin-prettier": "~3.4.0",
     "lint-staged": "^11.1.2",
     "prettier": "~2.0.5",
