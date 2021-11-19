@@ -23,7 +23,7 @@
     "eslint-config-tamia": "~7.2.5",
     "eslint-plugin-prettier": "~3.4.0",
     "husky": "~4.2.5",
-    "lint-staged": "^11.1.2",
+    "lint-staged": "^11.1.2"
   },
   "husky": {
     "hooks": {
