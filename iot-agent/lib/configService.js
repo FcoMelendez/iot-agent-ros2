@@ -29,7 +29,7 @@ function processEnvironmentVariables() {
         },
         server: {
             port: 4061,
-            host: 'iota' //192.168.1.18
+            host: 'localhost' //192.168.1.18
         },
         deviceRegistry: {
             type: 'memory'
