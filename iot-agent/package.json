@@ -4,9 +4,7 @@
   "description": "Getting started with rclnodejs",
   "main": "index.js",
   "scripts": {
-    "clean": "rm -rf package-lock.json && rm -rf node_modules && rm -rf coverage",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint lib/ --cache --fix"
+    "clean": "rm -rf package-lock.json && rm -rf node_modules && rm -rf coverage"
   },
   "author": "",
   "license": "ISC",
@@ -16,30 +14,7 @@
     "http": "*",
     "express": "*",
     "request": "*",
-    "logops": "*"
-  },
-  "devDependencies": {
-    "coveralls": "^3.1.0",
-    "eslint": "~7.5.0",
-    "eslint-config-tamia": "~7.2.5",
-    "eslint-plugin-prettier": "~3.4.0",
-    "husky": "~4.2.5",
-    "lint-staged": "^11.1.2"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.js": [
-      "prettier --config .prettierrc.json --write"
-    ],
-    "*.md": [
-      "prettier --no-config --tab-width 4 --print-width 120 --write --prose-wrap always"
-    ],
-    "*.yml": [
-      "prettier --no-config --write"
-    ]
+    "logops": "*",
+    "rclnodejs": "*"
   }
 }
