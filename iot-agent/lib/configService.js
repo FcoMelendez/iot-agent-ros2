@@ -29,7 +29,7 @@ function processEnvironmentVariables() {
         },
         server: {
             port: 4061,
-            host: 'iot-agent' //192.168.1.18
+            host: 'iota' //192.168.1.18
         },
         deviceRegistry: {
             type: 'memory'
@@ -37,7 +37,7 @@ function processEnvironmentVariables() {
         types: {},
         service: 'ros2iot',
         subservice: '/',
-        providerUrl: 'http://iot-agent:4061', //http://192.168.1.18:4061
+        providerUrl: 'http://iota:4061', //http://192.168.1.18:4061
         defaultResource: '/',
         defaultType: 'ROS2System',
         defaultKey: 'abc'
