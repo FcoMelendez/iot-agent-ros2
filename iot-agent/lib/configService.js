@@ -23,7 +23,7 @@ function processEnvironmentVariables() {
     config.iota = {
         logLevel: 'DEBUG',
         contextBroker: {
-            host: 'orion', //192.168.1.15
+            host: 'localhost', //192.168.1.15
             port: '1026',
             ngsiVersion: 'v2'
         },
@@ -37,7 +37,7 @@ function processEnvironmentVariables() {
         types: {},
         service: 'ros2iot',
         subservice: '/',
-        providerUrl: 'http://iota:4061', //http://192.168.1.18:4061
+        providerUrl: 'http://localhost:4061', //http://192.168.1.18:4061
         defaultResource: '/',
         defaultType: 'ROS2System',
         defaultKey: 'abc'
