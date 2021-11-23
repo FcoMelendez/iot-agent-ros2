@@ -279,22 +279,22 @@ var generateCommandExecution = async function (service, subservice, deviceId, co
 function createSubscriberForActiveAttr(ros2_node, topic_type_str, topic_path_str, ngsi_attr_name_str,throttling_ms_int)
 {
   last_message[ngsi_attr_name_str] = 0;
-  var subscriber_initializer_loop = setInterval(() => {
+  /*var subscriber_initializer_loop = setInterval(() => {
     var topics_names_and_types = ros2_node.getTopicNamesAndTypes();
     console.log(topics_names_and_types);
     
-  }, 1000);
-  /*ros2_node.createSubscription(topic_type_str, topic_path_str, (msg) => {
+  }, 1000);*/
+  ros2_node.createSubscription(topic_type_str, topic_path_str, (msg) => {
     let last_time_stamp = last_message[ngsi_attr_name_str];
     let time_stamp = new Date().getTime();
     let diff = Math.abs(time_stamp - last_time_stamp);
-    if (diff > throttling_ms_int) 
+    /*if (diff > throttling_ms_int) 
     {
       //console.log(`Received message: ${typeof msg}`, msg); //fmf
       last_message[ngsi_attr_name_str] = new Date().getTime();
       sendROS2MessageAsActiveAttribute(ngsi_attr_name_str, msg);
-    }
-  });*/
+    }*/
+  });
 
 }
 
