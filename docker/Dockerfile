@@ -40,5 +40,5 @@ RUN apt-get update && apt-get install -y \
 
 # launch ros package
 CMD ["/root/.nvm/versions/node/v12.22.7/bin/node", "-v"]
-CMD ["/root/.nvm/versions/node/v12.22.7/bin/node", "/iot-agent-ros2-master/iot-agent/lib/index.js"]
+CMD ["/root/.nvm/versions/node/v12.22.7/bin/node", "/iot-agent-ros2-master/lib/index.js"]
 
