@@ -33,7 +33,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get update && apt-get install -y --no-install-recommends unzip \
     && unzip source.zip \
     && rm source.zip \
-    && cd iot-agent-ros2-master/lib && npm install \
+    && cd iot-agent-ros2-master && ls \
+    && cd lib && npm install \
 #   Step 4
     && cd lib && which node && pwd	
 
