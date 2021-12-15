@@ -97,11 +97,13 @@ function startROS(){
     console.log("ROS2 System: Starting ROS 2 Node");
     rclnodejs.init().then(() => {
       // Create the ROS 2 Node
-      ros2_node = new rclnodejs.Node('iot_agent', 'ngsiv2');
+      ros2_node = new rclnodejs.Node('iot_agent', 'ngsiv2')
       var publisher_init = ros2_node.createPublisher('std_msgs/msg/String', 'iota_check');
       publisher_init.publish(`Hello ROS, this is the FIWARE IoTA`);
+      console.log("------ Checking Connection -------");
       var topic_object = ros2_node.getTopicNamesAndTypes();
       console.log(topic_object);
+      console.log("------ Checking Connection -------");
       // Create a ROS 2 Subscriber for each Active Attribute
       var ros_attributes = ros2_system_conf.attributes;
       ros_attributes.forEach(element => {
