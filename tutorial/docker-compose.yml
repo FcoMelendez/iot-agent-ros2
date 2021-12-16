@@ -35,6 +35,4 @@ services:
       - default
     expose:
       - 4061
-    ports:
-      - 4061:4061 # localhost:4041
-      - "7000-8000:7000-8000" # localhost:7896
+

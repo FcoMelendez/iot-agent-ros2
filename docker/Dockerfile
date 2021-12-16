@@ -16,6 +16,7 @@ ENV NVM_DIR /root/.nvm
 RUN apt-get update && apt-get install -y \
       ros-${ROS_DISTRO}-demo-nodes-cpp \
       ros-${ROS_DISTRO}-demo-nodes-py \
+      ros-${ROS_DISTRO}-turtlesim \
       curl && \
     rm -rf /var/lib/apt/lists/* &&\ 
 #   Step 2
@@ -35,6 +36,7 @@ RUN apt-get update && apt-get install -y \
     && rm source.zip \
     && cd iot-agent-ros2-master/lib && npm install \
 #   Step 4
+    && ros2 interface list \
     && which node && pwd	
 
 
