@@ -1,0 +1,18 @@
+{
+  "name": "demo_app",
+  "version": "1.0.0",
+  "description": "GUI for the ROS2 IoT Agent DEmo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "*",
+    "http": "*",
+    "express": "*",
+    "request": "*",
+    "logops": "*"
+  }
+}

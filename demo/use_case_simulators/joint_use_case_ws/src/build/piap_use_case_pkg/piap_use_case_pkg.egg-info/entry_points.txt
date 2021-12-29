@@ -1,0 +1,3 @@
+[console_scripts]
+piap_simulator = piap_use_case_pkg.piap_simulator:main
+
