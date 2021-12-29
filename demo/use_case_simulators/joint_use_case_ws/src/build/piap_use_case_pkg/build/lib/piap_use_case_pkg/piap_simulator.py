@@ -146,7 +146,6 @@ class PiapUseCaseSimulator(Node):
     
     def temperature_timer_callback(self):
         s = np.random.normal(self.temperature_mean, self.temperature_sigma, 1)
-        print(s)
         msg = Int32()
         msg.data = int(s[0])
         self.temperature_publisher_.publish(msg)
@@ -200,11 +199,13 @@ class PiapUseCaseSimulator(Node):
     def opener_status_timer_callback(self):
         msg = Int32()
         msg.data = int(self.opener_status)
-        self.publisher_.publish(msg)
+        self.opener_status_publisher_.publish(msg)
         self.get_logger().info('Door Opener Status is: %d [0:Stopped, 1:Running]' % msg.data)  
     
     def laser_simulator_timer_callback(self):
         self.laser_closest_distance = abs(self.robot_pose)
+        if self.laser_closest_distance > 300:
+                self.laser_closest_distance = 300                 
         msg = Int32()
         msg.data = int(self.laser_closest_distance)
         self.laser_status_publisher_.publish(msg)
@@ -241,7 +242,7 @@ class PiapUseCaseSimulator(Node):
         
     def restarter_loop_callback(self):
         if self.robot_pose == 300: 
-                self.robot_pose = -300
+                self.robot_pose = -500
                 self.door_current_state = 0       
                 self.get_logger().info('Restarter: New Situation')  
                 self.get_logger().info('------------------------')          

@@ -182,7 +182,7 @@ class PiapUseCaseSimulator(Node):
     def effector_status_timer_callback(self):
         msg = Int32()
         msg.data = int(self.final_effector_status)
-        self.effector_status_publisher_.publish(msg)
+        self.publisher_.publish(msg)
         self.get_logger().info('Final Effector Status (Warning Light) is: %d [0:On / 1:Off]' % msg.data)
     
     def opener_cmd_callback(self, msg):
@@ -202,8 +202,10 @@ class PiapUseCaseSimulator(Node):
         self.opener_status_publisher_.publish(msg)
         self.get_logger().info('Door Opener Status is: %d [0:Stopped, 1:Running]' % msg.data)  
     
-    def laser_simulator_timer_callback(yself):
+    def laser_simulator_timer_callback(self):
         self.laser_closest_distance = abs(self.robot_pose)
+        if self.laser_closest_distance > 300:
+                self.laser_closest_distance = 300                 
         msg = Int32()
         msg.data = int(self.laser_closest_distance)
         self.laser_status_publisher_.publish(msg)
@@ -240,7 +242,7 @@ class PiapUseCaseSimulator(Node):
         
     def restarter_loop_callback(self):
         if self.robot_pose == 300: 
-                self.robot_pose = -300
+                self.robot_pose = -500
                 self.door_current_state = 0       
                 self.get_logger().info('Restarter: New Situation')  
                 self.get_logger().info('------------------------')          
