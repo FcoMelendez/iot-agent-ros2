@@ -148,7 +148,7 @@ class PiapUseCaseSimulator(Node):
         s = np.random.normal(self.temperature_mean, self.temperature_sigma, 1)
         print(s)
         msg = Int32()
-        msg.data = int(s)
+        msg.data = int(s[0])
         self.temperature_publisher_.publish(msg)
         self.get_logger().info('Temperature Sensor: %d [ºC]' % msg.data)
         self.temperature_msg_counter += 1

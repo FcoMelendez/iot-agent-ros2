@@ -146,9 +146,8 @@ class PiapUseCaseSimulator(Node):
     
     def temperature_timer_callback(self):
         s = np.random.normal(self.temperature_mean, self.temperature_sigma, 1)
-        print(s)
         msg = Int32()
-        msg.data = int(s)
+        msg.data = int(s[0])
         self.temperature_publisher_.publish(msg)
         self.get_logger().info('Temperature Sensor: %d [ºC]' % msg.data)
         self.temperature_msg_counter += 1
@@ -183,7 +182,7 @@ class PiapUseCaseSimulator(Node):
     def effector_status_timer_callback(self):
         msg = Int32()
         msg.data = int(self.final_effector_status)
-        self.publisher_.publish(msg)
+        self.effector_status_publisher_.publish(msg)
         self.get_logger().info('Final Effector Status (Warning Light) is: %d [0:On / 1:Off]' % msg.data)
     
     def opener_cmd_callback(self, msg):
@@ -200,10 +199,10 @@ class PiapUseCaseSimulator(Node):
     def opener_status_timer_callback(self):
         msg = Int32()
         msg.data = int(self.opener_status)
-        self.publisher_.publish(msg)
+        self.opener_status_publisher_.publish(msg)
         self.get_logger().info('Door Opener Status is: %d [0:Stopped, 1:Running]' % msg.data)  
     
-    def laser_simulator_timer_callback(self):
+    def laser_simulator_timer_callback(yself):
         self.laser_closest_distance = abs(self.robot_pose)
         msg = Int32()
         msg.data = int(self.laser_closest_distance)
