@@ -149,7 +149,7 @@ class PiapUseCaseSimulator(Node):
         print(s)
         msg = Int32()
         msg.data = int(s)
-        self.publisher_.publish(msg)
+        self.temperature_publisher_.publish(msg)
         self.get_logger().info('Temperature Sensor: %d [ºC]' % msg.data)
         self.temperature_msg_counter += 1
         
