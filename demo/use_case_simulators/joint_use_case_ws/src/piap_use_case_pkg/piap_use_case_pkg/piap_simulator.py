@@ -11,6 +11,29 @@ class PiapUseCaseSimulator(Node):
     def __init__(self):
         super().__init__('piap_use_case_simulator')
         
+        # ROS Topics and Publishers
+        # ----------
+        self.humidity_sensor_topic = 'humidity'                                                                         #1     
+        self.humidity_publisher_ = self.create_publisher(Int32, self.humidity_sensor_topic , 10)          
+        self.temperature_sensor_topic = 'temperature'
+        self.temperature_publisher_ = self.create_publisher(Int32, self.temperature_sensor_topic , 10)                  #2
+        self.opener_cmd_topic = 'opener_cmd'
+        self.opener_cmd_publisher_ = self.create_publisher(Int32, self.opener_cmd_topic , 10)                           #3
+        self.opener_cmd_monitor_topic = 'opener_cmd_monitor'
+        self.opener_cmd_monitor_publisher_ = self.create_publisher(Int32, self.opener_cmd_monitor_topic , 10)           #4
+        self.opener_status_topic = 'opener_status'
+        self.opener_status_publisher_ = self.create_publisher(Int32, self.opener_status_topic , 10)                     #5
+        self.door_status_topic = 'door_status'
+        self.door_status_publisher_ = self.create_publisher(Int32, self.door_status_topic , 10)                         #6
+        self.laser_status_topic = 'distance'
+        self.laser_status_publisher_ = self.create_publisher(Int32, self.laser_status_topic , 10)                       #7 
+        self.final_effector_cmd_topic = 'final_effector_cmd'
+        self.effector_cmd_publisher_ = self.create_publisher(Int32, self.final_effector_cmd_topic, 10)         #8
+        self.final_effector_cmd_monitor_topic = 'final_effector_cmd'
+        self.effector_cmd_monitor_publisher_ = self.create_publisher(Int32, self.final_effector_cmd_monitor_topic , 10) #9 
+        self.final_effector_status_topic = 'final_effector_status'
+        self.effector_status_publisher_ = self.create_publisher(Int32, self.final_effector_status_topic , 10)           #10
+                
         # Humidity Sensor
         # ---------------        
 
@@ -19,12 +42,10 @@ class PiapUseCaseSimulator(Node):
         # - Set the topic name and publishing rate 
         self.humidity_mean = 56
         self.humidity_sigma = 1 # mean and standard deviation
-        self.humidity_sensor_topic = 'humidity'
         humidity_timer_period = 0.5  # seconds
 
         # b) Create the ROS 2 Publishers 
         # - Create the humidity publisher and an infinite publishing loop                
-        self.publisher_ = self.create_publisher(Int32, self.humidity_sensor_topic , 10)
         self.humidity_timer = self.create_timer(humidity_timer_period, self.humidity_timer_callback)
         self.humidity_msg_counter = 0
 
@@ -37,12 +58,10 @@ class PiapUseCaseSimulator(Node):
         # - Set the topic name and publishing rate 
         self.temperature_mean = 16
         self.temperature_sigma = 0.3 # mean and standard deviation
-        self.temperature_sensor_topic = 'temperature'
         temperature_timer_period = 2  # seconds
 
         # b) Create the ROS 2 Publishers 
         # - Create the temperature publisher and an infinite publishing loop                
-        self.temperature_publisher_ = self.create_publisher(Int32, self.temperature_sensor_topic , 10)
         self.temperature_timer = self.create_timer(temperature_timer_period, self.temperature_timer_callback)
         self.temperature_msg_counter = 0
         
@@ -50,16 +69,15 @@ class PiapUseCaseSimulator(Node):
         # ------------------------
 
         # a) Opener Simulator:
-        ## Config
+        ## Config and initialize the Opener Status
         self.opener_cmd = 0 # 0-Stop, 1-Open, 2-Close
+        opener_init_msg = Int32()
+        opener_init_msg.data = int(0)
+        self.opener_cmd_publisher_.publish(opener_init_msg)
         self.opener_status = 0 # 0-Stopped, 1-Running
-        self.opener_cmd_topic = 'opener_cmd'
-        self.opener_status_topic = 'opener_status'
         opener_status_timer_period = 2  # seconds
         ## Publish the status of the opener in a continuous loop
-        self.opener_status_publisher_ = self.create_publisher(Int32, self.opener_status_topic , 10)
         self.opener_status_timer = self.create_timer(opener_status_timer_period, self.opener_status_timer_callback)
-        self.opener_cmd_publisher_ = self.create_publisher(Int32, self.opener_cmd_topic , 10)
         
         
         # b) Door Simulator:
@@ -67,14 +85,11 @@ class PiapUseCaseSimulator(Node):
         self.door_state_open = 10
         self.door_current_state = 0     #  
         self.door_current_behaviour = 0 # 0-Stopped, 1-Opening, 2-Closing
-        self.door_status_topic = 'door_status'
         automated_door_simulator_timer_period = 1  # seconds
         ## Create the door automation simulator
         self.automated_door_simulator_timer = self.create_timer(automated_door_simulator_timer_period, self.door_state_loop_callback)
-        self.door_status_publisher_ = self.create_publisher(Int32, self.door_status_topic , 10)
        
         # c) Laser Simulator:
-        self.laser_status_topic = 'distance'
         self.laser_closest_distance_max = 300 # cm
         self.laser_closest_distance = 300 # cm
         self.laser_pose = 0 #The world space is a 6m. long straight line which accounts for 600 positions (1 per cm.). 
@@ -83,21 +98,19 @@ class PiapUseCaseSimulator(Node):
                             # laser_pose == 0 (laser & door pose are the same) means the laser is placed in the central pose of the world
         laser_simulator_timer_period = 0.5
         self.laser_simulator_timer = self.create_timer(laser_simulator_timer_period, self.laser_simulator_timer_callback)
-        self.laser_status_publisher_ = self.create_publisher(Int32, self.laser_status_topic , 10)
                             
         # d) Final effector simulator:
         ## Config
         self.final_effector_cmd = 0 # 0-switch off / 1--switch on
         self.final_effector_status = 0 # 0-off / 1-on 
-        self.final_effector_cmd_topic = 'final_effector_cmd'
-        self.final_effector_status_topic = 'final_effector_status'
         efector_status_timer_period = 1 #seconds
-        ## Listen to final effector commands and act accordingly 
-        self.effector_cmd_publisher_ = self.create_publisher(Int32, self.final_effector_cmd_topic , 10)
+        ## Initialize the Final Effector Status, Listen to final effector commands and act accordingly
+        new_msg = Int32()
+        new_msg.data = int(0)
+        self.effector_cmd_publisher_.publish(new_msg)      
         self.effector_cmd_subscriber_ = self.create_subscription(Int32, self.final_effector_cmd_topic , self.effector_cmd_callback, 10)
         self.effector_cmd_subscriber_  # prevent unused variable warning
         ## Publish the status of the final effector in a continuous loop
-        self.effector_status_publisher_ = self.create_publisher(Int32, self.final_effector_status_topic , 10)
         self.effector_status_timer = self.create_timer(efector_status_timer_period, self.effector_status_timer_callback)
         self.effector_status_msg_counter = 0
 
@@ -138,7 +151,7 @@ class PiapUseCaseSimulator(Node):
         print(s)
         msg = Int32()
         msg.data = int(s)
-        self.publisher_.publish(msg)
+        self.humidity_publisher_.publish(msg)
         self.get_logger().info('Humidity Sensor: %d [%%]' % msg.data)
         self.humidity_msg_counter += 1
         # if self.humidity_msg_counter > 10:
@@ -165,11 +178,10 @@ class PiapUseCaseSimulator(Node):
                 msg = Int32()
                 msg.data = 0
                 self.opener_cmd_publisher_.publish(msg) # Notify the door is already closed   
-        if self.door_current_state == 0 or int(self.door_current_state):
-                msg = Int32()
-                msg.data = self.door_current_state
-                self.door_status_publisher_.publish(msg) # Notify the current robot status
-                self.get_logger().info('Door Status: %d [0-Closed, 10-Open]' % msg.data)
+        msg = Int32()
+        msg.data = self.door_current_state
+        self.door_status_publisher_.publish(msg) # Notify the current robot status
+        self.get_logger().info('Door Status: %d [0-Closed, 10-Open]' % msg.data)
 
 
     def effector_cmd_callback(self, msg):
@@ -182,7 +194,7 @@ class PiapUseCaseSimulator(Node):
     def effector_status_timer_callback(self):
         msg = Int32()
         msg.data = int(self.final_effector_status)
-        self.publisher_.publish(msg)
+        self.effector_status_publisher_.publish(msg)
         self.get_logger().info('Final Effector Status (Warning Light) is: %d [0:On / 1:Off]' % msg.data)
     
     def opener_cmd_callback(self, msg):
@@ -190,7 +202,9 @@ class PiapUseCaseSimulator(Node):
                 self.opener_cmd = msg.data
                 self.get_logger().info('Opener Command: %d [0-Stop, 1-Open Door, 2- Close Door)]' % msg.data)
                 if msg.data == 0:
-                        self.effector_cmd_publisher_.publish(msg)
+                        new_msg = Int32()
+                        new_msg.data = int(0)
+                        self.effector_cmd_publisher_.publish(new_msg)
                 else:
                         new_msg = Int32()
                         new_msg.data = int(1)
